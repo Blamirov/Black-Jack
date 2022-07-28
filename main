@@ -1,0 +1,87 @@
+import random
+
+dict_cart = {11: 'jack', 12: 'quin', 13: 'king', 14: 'ace'}
+
+
+def count_point(player):
+    sum_cart = 0
+    for cart in player.my_cart:
+        if isinstance(cart.rang, int):
+            sum_cart += cart.rang
+        else:
+            if cart.rang == 'ace':
+                if sum_cart > 21:
+                    sum_cart += 1
+                else:
+                    sum_cart += 11
+            else:
+                sum_cart += 10
+    if sum_cart > 21:
+        sum_cart = 0
+    return sum_cart
+
+
+def check_game(fst_player, snd_player):
+    sum1 = count_point(fst_player)
+    sum2 = count_point(snd_player)
+    if sum1 > sum2:
+        print(f'Победил {fst_player.name}!, со счетом {sum1}')
+    elif sum1 < sum2:
+        print(f'Победил {snd_player.name}!, со счетом {sum2}')
+    else:
+        print('Победил никто')
+
+
+def start(fst_player, snd_player, deck):
+    for _ in range(2):
+        random.shuffle(deck.full_cart)
+        fst_player.my_cart.append(deck.full_cart.pop())
+        snd_player.my_cart.append(deck.full_cart.pop())
+
+
+class Card:
+
+    def __init__(self, suit, rang):
+        self.suit = suit
+        self.rang = rang
+
+
+class Deck:
+    full_cart = [Card(suit, rang) if rang < 11
+                 else Card(suit, dict_cart[rang]) for rang in range(2, 15)
+                 for suit in {'diamonds', 'hearts', 'clubs', 'spades'}]
+
+
+class Player:
+
+    def __init__(self, name):
+        self.name = name
+        self.my_cart = []
+
+    def get_cart(self, deck):
+        self.my_cart.append(deck.full_cart[0])
+        del deck.full_cart[0]
+
+    def watch_cart(self):
+        print("Ваши карты:", end=' ')
+        [print(cart.suit, cart.rang, end=', ') for cart in self.my_cart]
+        print(f'Сумма очков {count_point(self)}')
+
+
+while True:
+    player_name = input("\nПривет, как вас зовут? ")
+    ask = input(f'{player_name}, готов сыграть в Блек-джек? ')  # не важно какой ответ это же казино :)
+    game_deck = Deck()
+    player = Player(player_name)
+    player_pc = Player('Компьютер')
+    start(player, player_pc, game_deck)
+    while True:
+        player.watch_cart()
+        new_cart = input(f'{player_name}, вам нужна еще одна карта ? д/н  ')
+        if new_cart == "д":
+            player.get_cart(game_deck)
+        else:
+            break
+    check_game(player, player_pc)
+    player.my_cart = list()
+    player_pc.my_cart = list()
